@@ -575,7 +575,17 @@ class SatelliteEnv(gym.Env):
 		# Obtenir l'observation pour chaque satellite
 		satellites = self.constellation.satellites
 		for i, satellite in enumerate(satellites):
-			observation[f"satellite_{i}"] = np.array(list(satellite.getObservation().values()), dtype=np.float32)
+			# Obtenir le dictionnaire d'observation du satellite
+			sat_obs_dict = satellite.getObservation()
+			
+			# Convertir les tenseurs PyTorch en tableaux numpy et les concaténer
+			sat_tensors = []
+			for tensor in sat_obs_dict.values():
+				sat_tensors.append(tensor.detach().cpu().numpy())
+			
+			# Concaténer tous les tableaux
+			satellite_obs = np.concatenate(sat_tensors)
+			observation[f"satellite_{i}"] = satellite_obs
 		
 		# Observation globale
 		globalObs = np.array([
